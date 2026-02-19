@@ -22,8 +22,8 @@ motor5 = Motor(Ports.PORT5, GearSetting.RATIO_18_1, True)
 motor6 = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
 
 #Intake and outtake
-snake_1 = Motor(Ports.PORT7, GearSetting.RATIO_18_1, False)
-snake_2 = Motor(Ports.PORT8, GearSetting.RATIO_18_1, False)
+snake_1 = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
+snake_2 = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 piston_ramp = DigitalOut(brain.three_wire_port.a)
 cylinder_piston = DigitalOut(brain.three_wire_port.b)
 
@@ -40,14 +40,35 @@ snake_running = False
 starting_pos_is_right = True # change to false if starting to the left, direction based on facing the board
 cylinder_dist = 18 # distance from tile corner to cylinder
 two_ball_time = 1.5 # seconds to intake 2 balls from cylinder
-turn_amt = 0.88 # numebr of rots to turn 90 deg
+two_ball_side = 0.5 # sec to outtake 2 balls to side ramp
+three_ball_intake = 0.5 # time to inttake 3 balls
 
 def dist_Conversion(dist):
     # function convert taken in desired dist in inch and convert into a number that is used in mm
     # 4/7 mm = 3 in
     # 5 mm = 21 in
     # 16/7 mm = 10 in
-    return (0.000103072*dist**2)+(0.243558*dist)-0.160173
+    if(dist == 3):
+        return 4/7
+    elif(dist == 12):
+        return 2.25
+    elif(dist == 24):
+        return 4.5
+    else:
+        return (0.000103072*dist**2)+(0.243558*dist)-0.160173
+
+def rot_Conversion(deg):
+    # function converts desired deg to coded rots
+    # 10 deg = 75-80 deg
+    # 6 deg = 45
+    # 24 deg = 175
+    # 12 deg = 85
+    if(deg == 90):
+        return 12.75
+    elif(deg == 45):
+        return 6
+    else:
+        return deg * 2/15
 
 def intake():
     snake_1.spin(FORWARD, 100, PERCENT)
@@ -82,55 +103,68 @@ def autonomous():
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
     intake()
+    cylinder_extend()
     if(starting_pos_is_right):
         drive_train.drive_for(FORWARD, dist_Conversion(12), MM, 100, PERCENT)
-        drive_train.turn_for(RIGHT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(RIGHT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(24), MM, 100, PERCENT)
-        drive_train.turn_for(RIGHT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(RIGHT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(cylinder_dist), MM, 100, PERCENT) #driving up to cylinder, change 18 to whatever needed in in.
         wait(two_ball_time, SECONDS) # time it takes to get 2 balls from cylinder
         stop_snake()
-        cylinder_retract()
         drive_train.drive_for(REVERSE, dist_Conversion(cylinder_dist+24), MM, 100, PERCENT)
+        cylinder_retract()
         ramp_up()
         outtake()
-        drive_train.turn_for(RIGHT, 90, DEGREES, 100, PERCENT)
+        wait(two_ball_side, SECONDS) # time to deposit 2 balls on ramp, change as needed
+        stop_snake()
+        drive_train.turn_for(RIGHT, rot_Conversion(90), DEGREES, 100, PERCENT)
         intake()
         drive_train.drive_for(FORWARD, dist_Conversion(24), MM, 100, PERCENT)
-        wait(500, MSEC)
+        wait(three_ball_intake, SECONDS) # time to intake 3 balls
         stop_snake()
-        drive_train.turn_for(RIGHT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(RIGHT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(3), MM, 100, PERCENT)
-        drive_train.turn_for(RIGHT, 135, DEGREES, 100, PERCENT)
+        drive_train.turn_for(RIGHT, rot_Conversion(90), DEGREES, 100, PERCENT)
+        drive_train.turn_for(RIGHT, rot_Conversion(45), DEGREES, 100, PERCENT)
         drive_train.drive_for(REVERSE, dist_Conversion(24), MM, 100, PERCENT)
         ramp_down()
         outtake()
     elif(starting_pos_is_right == False):
         drive_train.drive_for(FORWARD, dist_Conversion(12), MM, 100, PERCENT)
-        drive_train.turn_for(LEFT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(LEFT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(24), MM, 100, PERCENT)
-        drive_train.turn_for(LEFT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(LEFT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(cylinder_dist), MM, 100, PERCENT) #driving up to cylinder, change 18 to whatever needed in in.
         wait(two_ball_time, SECONDS) # time it takes to get 2 balls from cylinder
         stop_snake()
-        cylinder_retract()
         drive_train.drive_for(REVERSE, dist_Conversion(cylinder_dist+24), MM, 100, PERCENT)
+        cylinder_retract()
         ramp_up()
         outtake()
-        drive_train.turn_for(LEFT, 90, DEGREES, 100, PERCENT)
+        wait(two_ball_side, SECONDS) # time to deposit 2 balls on ramp
+        stop_snake()
+        drive_train.turn_for(LEFT, rot_Conversion(90), DEGREES, 100, PERCENT)
         intake()
         drive_train.drive_for(FORWARD, dist_Conversion(24), MM, 100, PERCENT)
-        wait(500, MSEC)
+        wait(three_ball_intake, SECONDS) # time to intake 3 balls
         stop_snake()
-        drive_train.turn_for(LEFT, 90, DEGREES, 100, PERCENT)
+        drive_train.turn_for(LEFT, rot_Conversion(90), DEGREES, 100, PERCENT)
         drive_train.drive_for(FORWARD, dist_Conversion(3), MM, 100, PERCENT)
-        drive_train.turn_for(LEFT, 135, DEGREES, 100, PERCENT)
+        drive_train.turn_for(LEFT, rot_Conversion(90), DEGREES, 100, PERCENT)
+        drive_train.turn_for(LEFT, rot_Conversion(45), DEGREES, 100, PERCENT)
         drive_train.drive_for(REVERSE, dist_Conversion(24), MM, 100, PERCENT)
         outtake()
 
 def user_control():
     brain.screen.clear_screen()
     brain.screen.print("driver control")
+    snake_running = True
+    if(starting_pos_is_right == False):
+        ramp_high = True
+    else:
+        ramp_high = False
+    cylinder_extended = False
     while True:
         #up down on left joystick, left right on right joystick 4 driving
         forward_Velocity = controller1.axis4.position()
@@ -190,12 +224,20 @@ comp = Competition(user_control, autonomous)
 
 # actions to do when the program starts
 brain.screen.clear_screen()
-#controller1.buttonX.pressed(autonomous)
-#user_control()
-# Drive forwards and backwards
-drive_train.drive_for(FORWARD, dist_Conversion(12), MM)
-wait(10, SECONDS)
-drive_train.drive_for(REVERSE, dist_Conversion(12), MM)
-drive_train.turn_for(RIGHT, 90, DEGREES)
+#autonomous()
+user_control()
 
-# 0.88 turns = 1 Foot 
+# TO DO LIST:
+
+# driver control tasks:
+# test driver control drive train
+# test driver control snake
+# test driver control piston
+ 
+# auton tasks
+# test two_ball_time var
+# test ball_snipe (how many rots to outtake a ball)
+# test two_ball_side var
+# test three_ball_intake var
+# test full auton code for time and accuracy
+# tape in wires to make sure no disconnect
