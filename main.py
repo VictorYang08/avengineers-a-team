@@ -49,11 +49,13 @@ def dist_Conversion(dist):
     # 5 mm = 21 in
     # 16/7 mm = 10 in
     if(dist == 3):
-        return 4/7
+        return 0.85
     elif(dist == 12):
-        return 2.25
+        return 2.9
     elif(dist == 24):
-        return 4.5
+        return 5.9
+    elif(dist == 6):
+        return 1.5
     else:
         return (0.000103072*dist**2)+(0.243558*dist)-0.160173
 
@@ -64,7 +66,7 @@ def rot_Conversion(deg):
     # 24 deg = 175
     # 12 deg = 85
     if(deg == 90):
-        return 12.75
+        return 12.5
     elif(deg == 45):
         return 6
     else:
@@ -72,11 +74,11 @@ def rot_Conversion(deg):
 
 def intake():
     snake_1.spin(FORWARD, 100, PERCENT)
-    snake_2.spin(REVERSE, 100, PERCENT)
+    snake_2.spin(FORWARD, 100, PERCENT)
 
 def outtake():
     snake_1.spin(REVERSE, 100, PERCENT)
-    snake_2.spin(FORWARD, 100, PERCENT)
+    snake_2.spin(REVERSE, 100, PERCENT)
 
 def stop_snake():
     snake_1.stop()
@@ -102,14 +104,14 @@ def ball_snipe():
 def turn_left_90():
     drive_train_left.spin(REVERSE, 100, PERCENT)
     drive_train_right.spin(FORWARD, 100, PERCENT)
-    wait(385, MSEC)
+    wait(297, MSEC)
     drive_train_left.stop()
     drive_train_right.stop()
 
 def turn_left_45():
     drive_train_left.spin(REVERSE, 100, PERCENT)
     drive_train_right.spin(FORWARD, 100, PERCENT)
-    wait(280, MSEC)
+    wait(200, MSEC)
     drive_train_left.stop()
     drive_train_right.stop()
 
@@ -257,7 +259,7 @@ def user_control():
 brain.screen.clear_screen()
 autonomous()
 user_control()
-
+# slot 1 = only user control, slot 2 = auton and user control, slot 3 = random testing
 
 # TO DO LIST:
 
@@ -272,5 +274,6 @@ user_control()
 # test two_ball_side var DONE
 # test three_ball_intake var DONE
 # test full auton code for time and accuracy
-# test how long it takes to rotate 90 and 45 degrees left
+# 250 msec pause btwn driving and turning, change velocity to 50%
+# test how long it takes to rotate 90 and 45 degrees left DONE
 # tape in wires to make sure no disconnect DONE
